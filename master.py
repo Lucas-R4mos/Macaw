@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_security import Security, MongoEngineUserDatastore, \
-    auth_required, hash_password
+    auth_required
 from mongo_engine import mongo_collections
 from flask_limiter import RateLimitExceeded
 from werkzeug.exceptions import Forbidden
@@ -49,7 +49,7 @@ def create_app():
     @app.route('/', methods=['GET'])
     def index():
         return "Welcome to Macaw!", 200
-        
+
 
 if __name__ == '__main__':
     app = create_app()
