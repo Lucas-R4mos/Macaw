@@ -1,11 +1,12 @@
+import json
 from json.decoder import JSONDecodeError
+from flask import current_app
+from flask_security import hash_password, current_user
 import functions.utility_functions as utils
 import forms.users_forms as uf
-from flask import current_app
-from werkzeug.datastructures import ImmutableMultiDict
-from flask_security import hash_password
 from mongoengine.errors import ValidationError
-from json.decoder import JSONDecodeError
+from werkzeug.datastructures import ImmutableMultiDict
+from werkzeug.exceptions import Unauthorized
 
 
 def register_user(request, response):
@@ -47,5 +48,20 @@ def register_user(request, response):
 
     except ValidationError as e:
         return e.message, 400
+
+    return response
+
+def get_user_data(request, response):
+    if current_user.is_authenticated:
+        response_data = json.dumps({
+            'username': current_user.username,
+            'name': current_user.name,
+            'email': current_user.email,
+            'bio': current_user.bio
+        })
+        response.data = response_data
+        response.status_code = 200
+    else:
+        raise Unauthorized
 
     return response
