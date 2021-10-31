@@ -5,17 +5,18 @@ def create_mongo_engine():
     db = MongoEngine()
 
     class Role(db.Document, RoleMixin):
-        name = db.StringField(max_length=10, unique=True)
-        description = db.StringField(max_length=60)
+        name = db.StringField(max_length=80, unique=True)
+        description = db.StringField(max_length=255)
+        permissions = db.StringField(max_length=255)
 
     class User(db.Document, UserMixin):
         name = db.StringField(max_length=60)
-        username = db.StringField(max_length=20, min_length=6, unique=True)
+        username = db.StringField(max_length=20, min_length=2, unique=True)
         email = db.StringField(max_length=255, unique=True)
         password = db.StringField()
         bio = db.StringField(max_length=200, default='')
         active = db.BooleanField(default=True)
         fs_uniquifier = db.StringField(max_length=64, unique=True)
-        roles = db.ListField(db.ReferenceField(Role), default=['common'])
+        roles = db.ListField(db.ReferenceField(Role), default=[])
 
     return db, User, Role

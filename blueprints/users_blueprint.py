@@ -1,6 +1,6 @@
-import json
 from flask import Blueprint, request, Response
 from flask_security import current_user
+from werkzeug.exceptions import Unauthorized
 import functions.users_functions as uf 
 
 users_blueprint = Blueprint('users_blueprint', __name__)
@@ -8,13 +8,11 @@ users_blueprint = Blueprint('users_blueprint', __name__)
 @users_blueprint.route('/users', methods=['GET', 'POST'])
 def users():
     if request.method == 'GET':
-        if current_user.is_authenticated:
-            print(current_user.username)
-            return 'veja seu username no log', 200
-        else:
-            return 'não autenticado', 401
+        response = Response(response='OK', status=200)
+        response = uf.get_user_data(request, response)
+        return response
     elif request.method == 'POST':
-        response = Response(response='OK' ,status=200)
+        response = Response(response='OK', status=200)
         response = uf.register_user(request, response)
         return response
 

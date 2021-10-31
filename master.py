@@ -2,7 +2,7 @@ from flask import Flask
 from flask_security import Security, MongoEngineUserDatastore
 from mongo_engine import mongo_collections
 from flask_limiter import RateLimitExceeded
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, Unauthorized, MethodNotAllowed
 import flask_wtf
 from flask_wtf.csrf import CSRFError
 from blueprints.users_blueprint import users_blueprint as ub
@@ -21,32 +21,30 @@ def create_app():
     )
     app.security = Security(app, app.user_datastore)
 
+    @app.errorhandler(Unauthorized)
+    def unauthorized(e):
+        return 'Authorization required. Please, sign in.', 401
+
+    @app.errorhandler(RateLimitExceeded)
+    def rate_limit_exceeded(e):
+        return 'Request limit exceeded. Try again in a few moments.', 429
+
+    @app.errorhandler(Forbidden)
+    def forbidden(e):
+        return 'User does not have permission to execute this operation.', 403
+
     @app.errorhandler(CSRFError)
     def csrf_error(e):
         return 'No token provided.', 401
 
-    @app.errorhandler(405)
+    @app.errorhandler(MethodNotAllowed)
     def method_not_allowed(e):
-        return 'Method not allowed', 405
-
-    @app.errorhandler(401)
-    def unauthorized(e):
-        return 'Unauthorized.', 401
+        return 'Method not allowed.', 405
 
     # when developing, disable this error handler to get more info about any eventual error
     @app.errorhandler(Exception)
-    def internal_error(e):
-        if isinstance(e, RateLimitExceeded):
-            status = 'Request limit exceeded. Try again in a few moments.'
-            code = 429
-        elif isinstance(e, Forbidden):
-            status = 'User does not have permission to execute this operation.'
-            code = 403
-        else:
-            status = 'Internal Server Error.'
-            code = 500
-
-        return status, code
+    def error_handler(e):
+        return "Internal server error.", 500
 
     @app.route('/', methods=['GET'])
     def index():

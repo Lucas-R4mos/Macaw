@@ -2,8 +2,7 @@ import re
 from mongoengine.errors import ValidationError
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import (
-    Email,
-    Length
+    Email
 )
 from wtforms import (
     Form,
@@ -32,10 +31,26 @@ class PasswordValidator(object):
         elif not re.search(r"[!@#_\-.*]", field.data):
             raise ValidationError(
                 'Password must have at least one special character.')
-        elif re.search(r"[{}()$'\"`/\\]", field.data):
-            raise ValidationError(
-                'Password not must have dangerous characters.')
 
+class UsernameLengthValidator(object):
+    def __call__(self, form, field):
+        if len(field.data) < 2:
+            raise ValidationError('Username must have at least 2 characters.')
+        elif len(field.data) > 20:
+            raise ValidationError('Username must not have more than 20 characters.')
+
+class NameLengthValidator(object):
+    def __call__(self, form, field):
+        if len(field.data) < 2:
+            raise ValidationError('Name must have at least 2 characters.')
+        elif len(field.data) > 60:
+            raise ValidationError('Name must not have more than 60 characters.')
+
+class DangerousCharacterValidator(object):
+    def __call__(self, form, field):
+        if re.search(r"[{}()$'\"`/\\]", field.data):
+            raise ValidationError(
+                f'Invalid {field.name}.')
 
 class RequiredField(object):
     def __call__(self, form, field):
@@ -47,28 +62,25 @@ class RequiredField(object):
 
 class RegistrationUserForm(Form):
     email = EmailField('email', [
-        Email(message='Invalid email.'),
-        RequiredField()
+        Email(message='Invalid email address.'),
+        RequiredField(),
+        DangerousCharacterValidator()
     ])
 
     name = StringField('name', [
-        Length(
-            max=60,
-            message='Name field must not have more than 60 characters.'
-        ),
-        RequiredField()
+        NameLengthValidator(),
+        RequiredField(),
+        DangerousCharacterValidator()
     ])
 
     username = StringField('username', [
-        Length(
-            max=20,
-            min=6,
-            message='Username field must not have more than 20 characters or less than 6 characters.'
-        ),
-        RequiredField()
+        UsernameLengthValidator(),
+        RequiredField(),
+        DangerousCharacterValidator()
     ])
 
     password = PasswordField('password', [
         PasswordValidator(),
-        RequiredField()
+        RequiredField(),
+        DangerousCharacterValidator()
     ])
