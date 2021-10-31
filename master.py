@@ -33,19 +33,20 @@ def create_app():
     def unauthorized(e):
         return 'Unauthorized.', 401
 
-    # @app.errorhandler(Exception)
-    # def internal_error(e):
-    #     if isinstance(e, RateLimitExceeded):
-    #         status = 'Request limit exceeded. Try again in a few moments.'
-    #         code = 429
-    #     elif isinstance(e, Forbidden):
-    #         status = 'User does not have permission to execute this operation.'
-    #         code = 403
-    #     else:
-    #         status = 'Internal Server Error.'
-    #         code = 500
+    # when developing, disable this error handler to get more info about any eventual error
+    @app.errorhandler(Exception)
+    def internal_error(e):
+        if isinstance(e, RateLimitExceeded):
+            status = 'Request limit exceeded. Try again in a few moments.'
+            code = 429
+        elif isinstance(e, Forbidden):
+            status = 'User does not have permission to execute this operation.'
+            code = 403
+        else:
+            status = 'Internal Server Error.'
+            code = 500
 
-    #     return status, code
+        return status, code
 
     @app.route('/', methods=['GET'])
     def index():
@@ -57,5 +58,5 @@ if __name__ == '__main__':
     app = create_app()
     app.run(
         host='0.0.0.0',
-        port='5001'
+        port='5050'
     )

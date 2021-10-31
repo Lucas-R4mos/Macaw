@@ -8,9 +8,9 @@ users_blueprint = Blueprint('users_blueprint', __name__)
 @users_blueprint.route('/users', methods=['GET', 'POST'])
 def users():
     if request.method == 'GET':
-        print(current_user.get_id())
         if current_user.is_authenticated:
-            return 'veja o log', 200
+            print(current_user.username)
+            return 'veja seu username no log', 200
         else:
             return 'não autenticado', 401
     elif request.method == 'POST':
