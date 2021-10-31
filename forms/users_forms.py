@@ -31,9 +31,6 @@ class PasswordValidator(object):
         elif not re.search(r"[!@#_\-.*]", field.data):
             raise ValidationError(
                 'Password must have at least one special character.')
-        elif re.search(r"[{}()$'\"`/\\]", field.data):
-            raise ValidationError(
-                'Invalid password.')
 
 class UsernameLengthValidator(object):
     def __call__(self, form, field):
