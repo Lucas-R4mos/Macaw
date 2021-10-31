@@ -3,7 +3,7 @@ import forms.users_forms as uf
 from flask import current_app
 from werkzeug.datastructures import ImmutableMultiDict
 from flask_security import hash_password
-
+from mongoengine.errors import ValidationError
 
 def register_user(request, response):
     try:
@@ -15,7 +15,7 @@ def register_user(request, response):
             (data['username'] and not isinstance(data['username'], str))
         ) or data is not None:
             pass
-    except Exception as e:
+    except Exception:
         response.data, response.status_code = 'Invalid JSON.', 400
         return response
 
@@ -46,12 +46,7 @@ def register_user(request, response):
                 response.data, response.status_code = errors[0], 400
                 break
 
-    except Exception as e:
-        # this except will catch custom form validation errors
-        if (e.message):
-            return e.message, 400
-        else:
-            print(e, dir(e))
-            return 'Internal Server Error.', 500
-
+    except ValidationError as e:
+        return e.message, 400
+        
     return response
