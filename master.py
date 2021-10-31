@@ -1,16 +1,17 @@
 from flask import Flask
-from flask_security import Security, MongoEngineUserDatastore, \
-    auth_required
+from flask_security import Security, MongoEngineUserDatastore
 from mongo_engine import mongo_collections
 from flask_limiter import RateLimitExceeded
 from werkzeug.exceptions import Forbidden
 import flask_wtf
 from flask_wtf.csrf import CSRFError
+from blueprints.users_blueprint import users_blueprint as ub
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.config.Config')
     flask_wtf.CSRFProtect(app)
+    app.register_blueprint(ub)
 
     mongo_engine, User, Role = mongo_collections.create_mongo_engine()
 
@@ -32,19 +33,19 @@ def create_app():
     def unauthorized(e):
         return 'Unauthorized.', 401
 
-    @app.errorhandler(Exception)
-    def internal_error(e):
-        if isinstance(e, RateLimitExceeded):
-            status = 'Request limit exceeded. Try again in a few moments.'
-            code = 429
-        elif isinstance(e, Forbidden):
-            status = 'User does not have permission to execute this operation.'
-            code = 403
-        else:
-            status = 'Internal Server Error.'
-            code = 500
+    # @app.errorhandler(Exception)
+    # def internal_error(e):
+    #     if isinstance(e, RateLimitExceeded):
+    #         status = 'Request limit exceeded. Try again in a few moments.'
+    #         code = 429
+    #     elif isinstance(e, Forbidden):
+    #         status = 'User does not have permission to execute this operation.'
+    #         code = 403
+    #     else:
+    #         status = 'Internal Server Error.'
+    #         code = 500
 
-        return status, code
+    #     return status, code
 
     @app.route('/', methods=['GET'])
     def index():
